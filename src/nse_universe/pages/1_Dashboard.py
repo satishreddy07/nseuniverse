@@ -9,11 +9,35 @@ from nse_universe.providers.kotak_neo import NormalizedTick
 
 st.set_page_config(page_title="NSE Universe Dashboard",page_icon="📈",layout="wide")
 st.markdown("""<style>
-.stApp{background:#080f19;color:#e6edf7}[data-testid="stSidebar"]{background:#0b1421;border-right:1px solid #1b2b40}
-.block-container{padding-top:1rem;max-width:1800px}
-div[data-testid="stMetric"]{background:linear-gradient(145deg,#101c2b,#0c1623);border:1px solid #203249;border-radius:12px;padding:13px}
-div[data-testid="stMetricLabel"]{color:#91a3bb}div[data-testid="stMetricValue"]{color:#edf4ff}
-div[data-testid="stDataFrame"]{border:1px solid #203249;border-radius:10px}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--bg:#080d16;--panel:#0e1725;--panel2:#111e30;--line:#23334a;--muted:#8ea2bb;--text:#e9f1fc;--blue:#5aa7ff;--green:#32d49a;--red:#ff6d7b}
+.stApp{background:radial-gradient(ellipse at 15% 0%,#10213a 0%,#080d16 42%);color:var(--text);font-family:'Manrope',sans-serif}
+[data-testid="stHeader"]{background:transparent}
+[data-testid="stToolbar"]{right:1rem}
+[data-testid="stSidebar"]{background:#0a111d;border-right:1px solid #1c2b40}
+[data-testid="stSidebar"] > div:first-child{padding-top:1.4rem}
+.block-container{padding:1.4rem 2.1rem 3rem;max-width:1800px}
+h1,h2,h3{font-family:'Manrope',sans-serif!important;letter-spacing:-.035em!important;color:#f1f6ff!important}
+h1{font-size:2.15rem!important;font-weight:800!important;margin:.1rem 0 .2rem!important}
+h2{font-size:1.18rem!important;font-weight:750!important}
+h3{font-size:1rem!important;font-weight:700!important}
+p,[data-testid="stCaptionContainer"]{color:var(--muted)}
+[data-testid="stMetric"]{background:linear-gradient(145deg,rgba(18,31,49,.96),rgba(11,20,33,.96));border:1px solid #263952;border-radius:15px;padding:16px 18px;min-height:112px;box-shadow:0 8px 28px #00000014}
+[data-testid="stMetricLabel"]{color:#9db0c8!important;font-size:.76rem!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.075em}
+[data-testid="stMetricValue"]{color:#f2f7ff!important;font-family:'DM Mono',monospace!important;font-size:1.55rem!important;font-weight:500}
+[data-testid="stMetricDelta"]{font-family:'DM Mono',monospace}
+[data-testid="stVerticalBlockBorderWrapper"]{background:linear-gradient(145deg,rgba(15,25,40,.94),rgba(10,17,29,.94));border:1px solid #22334a!important;border-radius:17px!important;padding:18px!important;box-shadow:0 12px 32px #00000012}
+[data-testid="stDataFrame"]{border:1px solid #263952;border-radius:12px;overflow:hidden}
+[data-testid="stTextInput"] input,[data-testid="stSelectbox"]>div>div,[data-testid="stMultiSelect"]>div>div{background:#0b1523!important;border-color:#293d57!important;border-radius:10px!important;color:#eaf2ff!important}
+[data-testid="stTextInput"] label,[data-testid="stSelectbox"] label,[data-testid="stMultiSelect"] label{font-weight:700;font-size:.78rem;color:#a8bad0}
+.stButton>button{border-radius:10px;border:1px solid #304965;font-weight:750;min-height:2.6rem;transition:all .15s ease}
+.stButton>button[kind="primary"]{background:linear-gradient(100deg,#2677e8,#439bff);border:0;color:white;box-shadow:0 5px 18px #2477e833}
+.stButton>button:hover{border-color:#65adff;transform:translateY(-1px)}
+[data-testid="stAlert"]{border-radius:12px}
+hr{border-color:#23334a}
+small{color:var(--muted)}
+div[data-testid="stProgressBar"]>div>div{background:linear-gradient(90deg,#398dff,#35d5a0)}
+@media(max-width:900px){.block-container{padding:1rem .8rem 2rem}h1{font-size:1.7rem!important}[data-testid="stMetricValue"]{font-size:1.15rem!important}}
 </style>""",unsafe_allow_html=True)
 async def collect(adapter,tokens,seconds,feed_type):
     ticks=[]
