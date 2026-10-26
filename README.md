@@ -22,6 +22,8 @@ A personal, analysis-first NSE intraday research platform. The project establish
 - SQLite-backed option snapshot history with chronological retrieval and idempotent timestamp upserts.
 - Multi-snapshot OI trend summaries: net call/put OI change, supplied-chain PCR drift, top call/put additions and unwinding, and explicit data-quality warnings.
 - Provider-neutral ingestion pipeline that persists normalized snapshots, flags stale/incomplete data, and produces trend reports after at least two snapshots.
+- Optional Kotak Neo adapter using the maintained `kotakneoapi` SDK and modern async SFeed market-data API, with normalized tick models and local fixture tests.
+- Environment-based credential configuration and a market-data-only setup guide (`docs/kotak_neo_setup.md`).
 - Architecture and trading analytics rules; secret/local-data exclusions in `.gitignore`.
 
 **Scope note:** PCR over supplied contracts only describes those contracts. Treat it as a full-chain metric only when the chain's coverage is known complete. Price/OI quadrant labels for individual options are heuristics, not a directional market signal or a calibrated probability.
@@ -36,6 +38,8 @@ python -m venv .venv
 # macOS/Linux/Codespaces: source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
+# Optional live Kotak Neo data support:
+# python -m pip install -e ".[kotak-neo]"
 python -m pytest
 ```
 
@@ -43,7 +47,7 @@ python -m pytest
 
 1. Add CI and expand domain contracts.
 2. Add futures VWAP, sector strength, breadth, and explicitly labelled order-flow proxies.
-3. Integrate Kotak Neo streaming behind a provider adapter; test reconnects, freshness, and partial data.
+3. Complete live Kotak Neo session verification, reconnect/backoff, instrument-master loading, and option-chain token mapping.
 4. Add snapshot replay, walk-forward evaluation, and calibrated signal research.
 
 This is an early foundation, not a production trading system. A future score must not be presented as a probability without out-of-sample calibration. Live order execution remains out of scope until separately specified and risk-reviewed.
