@@ -186,14 +186,14 @@ class KotakNeoAdapter:
             for key in keys:
                 value = get(key)
                 if value is not None:
-                    return require_finite_number(value, field_name=key)
+                    return _provider_number(value, field_name=key)
             return None
 
         return NormalizedTick(
             instrument_token=str(token),
             exchange_segment=str(segment),
             trading_symbol=get("trading_symbol") or get("display_symbol"),
-            last_traded_price=require_finite_number(price, field_name="last_traded_price"),
+            last_traded_price=_provider_number(price, field_name="last_traded_price"),
             received_at=received,
             exchange_timestamp=exchange_timestamp,
             last_traded_quantity=optional_number(
@@ -262,4 +262,17 @@ def _best_level(message: Any, side: str, field: str) -> float | None:
     value = level.get(field) if isinstance(level, dict) else getattr(level, field, None)
     if value is None:
         return None
-    return require_finite_number(value, field_name=f"{side}.{field}")
+    return _provider_number(value, field_name=f"{side}.{field}")
+
+
+def _provider_number(value: Any, *, field_name: str) -> float:
+    """Parse numeric strings commonly used by broker SDK payloads, then validate."""
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            raise ValueError(f"{field_name} must be a finite number")
+        try:
+            value = float(value)
+        except ValueError as exc:
+            raise ValueError(f"{field_name} must be a finite number") from exc
+    return require_finite_number(value, field_name=field_name)
