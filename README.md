@@ -19,6 +19,8 @@ A personal, analysis-first NSE intraday research platform. The project establish
 - Overall/supplied-chain, ATM, and nearby-strike PCR calculations. Zero call OI yields an unavailable PCR, not infinity.
 - Snapshot-to-snapshot OI deltas, price deltas, and explicitly contract-level price/OI quadrant labels.
 - Chain completeness and missing call/put contract checks.
+- SQLite-backed option snapshot history with chronological retrieval and idempotent timestamp upserts.
+- Multi-snapshot OI trend summaries: net call/put OI change, supplied-chain PCR drift, top call/put additions and unwinding, and explicit data-quality warnings.
 - Architecture and trading analytics rules; secret/local-data exclusions in `.gitignore`.
 
 **Scope note:** PCR over supplied contracts only describes those contracts. Treat it as a full-chain metric only when the chain's coverage is known complete. Price/OI quadrant labels for individual options are heuristics, not a directional market signal or a calibrated probability.
