@@ -44,7 +44,7 @@ The token pairs above are illustrative. Use valid exchange segment/token pairs f
 - SDK/live credentials are not required for unit tests; normalization is tested with local fixtures.
 - A successful connection has not been verified against your account from GitHub. First run a market-data-only session and verify symbols, timestamps, and feed permissions.
 - Missing OI/volume/timestamps remain unavailable rather than being fabricated.
-- Reconnect/backoff, instrument-master download, and option-chain-to-contract mapping remain next steps. Do not treat an empty or stale stream as a valid signal.
+- The official SDK documents automatic reconnect/re-authentication/re-subscription. This adapter relies on that behavior; the tick cache separately detects instruments that have stopped updating. Verify this with your account and network before relying on it.\n- The instrument master is loaded from a locally downloaded current CSV; automatic authenticated download and contract-expiry selection remain to be wired to the SDK. Do not treat an empty or stale stream as a valid signal.
 
 
 ## Instrument master and depth
