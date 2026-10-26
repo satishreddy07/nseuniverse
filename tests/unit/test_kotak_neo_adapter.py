@@ -46,3 +46,23 @@ def test_config_from_env_requires_all_secrets(monkeypatch):
         monkeypatch.delenv(name, raising=False)
     with pytest.raises(ValueError, match="KOTAK_NEO_CONSUMER_KEY"):
         KotakNeoConfig.from_env()
+
+
+def test_normalizes_official_sfeed_aliases_depth_and_epoch_timestamp():
+    now = datetime(2026, 10, 26, 9, 15, tzinfo=timezone.utc)
+    tick = KotakNeoAdapter.normalize_message({
+        "instrument_token": "44", "exchange_segment": "nse_fo", "trading_symbol": "NIFTYCE",
+        "last_traded_price": 110, "last_trade_qty": 15, "volume_traded_today": 1000,
+        "last_update_time": 1793006090, "open_interest": 5000,
+        "total_buy_quantity": 1200, "total_sell_quantity": 900,
+        "buy": [{"price": 109.5, "quantity": 30, "orders": 2}],
+        "sell": [{"price": 110.0, "quantity": 25, "orders": 1}],
+    }, received_at=now)
+    assert tick.last_traded_quantity == 15
+    assert tick.volume == 1000
+    assert tick.total_buy_quantity == 1200
+    assert tick.best_bid_price == 109.5
+    assert tick.best_bid_quantity == 30
+    assert tick.best_ask_price == 110
+    assert tick.best_ask_quantity == 25
+    assert tick.exchange_timestamp == datetime.fromtimestamp(1793006090, tz=timezone.utc)
