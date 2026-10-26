@@ -56,7 +56,18 @@ class InstrumentMaster:
             reader = csv.DictReader(handle)
             if not reader.fieldnames:
                 raise ValueError("Instrument master CSV has no header")
-            for row in reader:
+            # Kotak's transformed CSV includes padded headers such as
+            # "lExpiryDate " and "dTickSize ". Normalize whitespace while
+            # preserving meaningful punctuation such as "dStrikePrice;".
+            reader.fieldnames = [
+                name.strip() if name is not None else name
+                for name in reader.fieldnames
+            ]
+            for raw_row in reader:
+                row = {
+                    (key.strip() if key is not None else key): value
+                    for key, value in raw_row.items()
+                }
                 # Current Kotak transformed master: pSymbol is the token;
                 # pExchSeg is the websocket segment; pScripRefKey is not the token.
                 segment = _first(
