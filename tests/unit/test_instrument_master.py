@@ -7,7 +7,7 @@ def test_loads_actual_kotak_transformed_csv_and_uses_psymbol_as_token(tmp_path):
     path = tmp_path / "nse_fo.csv"
     path.write_text(
         "pSymbol,pGroup,pExchSeg,pInstType,pSymbolName,pTrdSymbol,pOptionType,"
-        "pScripRefKey,lLotSize,lExpiryDate,dStrikePrice;\n"
+        "pScripRefKey,lLotSize,lExpiryDate ,dStrikePrice;\n"
         "98765,,nse_fo,OPTIDX,NIFTY,NIFTY26OCT26000CE,CE,NIFTY26OCT26000CE,65,1793000000,26000\n"
         "98766,,nse_fo,OPTIDX,NIFTY,NIFTY26OCT26000PE,PE,NIFTY26OCT26000PE,65,1793000000,26000\n",
         encoding="utf-8",
@@ -19,6 +19,7 @@ def test_loads_actual_kotak_transformed_csv_and_uses_psymbol_as_token(tmp_path):
     assert item.strike == 26000
     assert item.option_type == "CE"
     assert item.lot_size == 65
+    assert item.expiry == "1793000000"
     assert master.by_symbol("nse_fo", "nifty26oct26000pe").token == "98766"
     assert len(master.search("NIFTY", exchange_segment="nse_fo")) == 2
 
