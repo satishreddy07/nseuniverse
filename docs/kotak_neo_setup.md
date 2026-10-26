@@ -59,3 +59,27 @@ Download the current CSV from Kotak Neo's authenticated scrip-master workflow, t
 Use `master.get("nse_fo", token)` to resolve a token or `master.by_symbol("nse_fo", trading_symbol)` for an exact symbol. Confirm the CSV columns and selected contract/expiry before subscribing; the loader skips rows without segment, token, and symbol. Keep downloaded market data local and do not commit it.
 
 For depth-capable subscriptions, use `adapter.stream(tokens, feed_type="depth")` or `feed_type="full_depth"`. The adapter exposes aggregate buy/sell quantities and best bid/ask where present. This is a snapshot of the SDK feed, not a complete reconstructed order-by-order tape. Use `TickCache(max_age_seconds=5)` to detect missing/stale tick updates; choose the freshness threshold to match the instrument/feed cadence.
+
+
+## Build a normalized option-chain snapshot
+
+After loading the latest instrument master, explicitly select contracts for one underlying and one expiry, then feed their latest ticks through the freshness-aware builder:
+
+    from datetime import datetime, timezone
+    from nse_universe.providers.option_chain_builder import OptionChainSnapshotBuilder
+    from nse_universe.providers.tick_cache import TickCache
+
+    # selected_contracts must be verified CE/PE instruments for one expiry.
+    builder = OptionChainSnapshotBuilder(selected_contracts, underlying="NIFTY")
+    cache = TickCache(max_age_seconds=5)
+    # In your stream loop: cache.update(tick)
+    snapshot = builder.build(
+        cache,
+        spot_price=spot_ltp,
+        observed_at=datetime.now(timezone.utc),
+        now=datetime.now(timezone.utc),
+        max_age_seconds=5,
+    )
+    # Feed this snapshot to OptionSnapshotIngestor; incomplete chains stay marked incomplete.
+
+The builder does not infer expiry selection or invent OI. A missing/stale tick or missing OI omits that contract and marks the chain incomplete. Keep the spot price from a verified live index/spot instrument; do not use a futures price as spot.
