@@ -34,7 +34,7 @@ class OptionChainSnapshotBuilder:
         contracts: list[OptionContract] = []
         all_fresh_and_complete = True
         for item in self.instruments:
-            status = cache.status(item.exchange_segment, item.token, now=now)
+            status = cache.status(item.exchange_segment, item.token, now=now, max_age_seconds=max_age_seconds)
             tick = status.last_tick
             if status.stale or tick is None or tick.open_interest is None:
                 all_fresh_and_complete = False
