@@ -16,7 +16,7 @@ def test_atm_pcr_scopes_to_one_strike():
 def test_nearby_pcr_uses_nearest_distinct_strikes():
     items=[c(90,"CE",100),c(90,"PE",100),c(100,"CE",100),c(100,"PE",300),c(110,"CE",100),c(110,"PE",500),c(120,"CE",100),c(120,"PE",900)]
     result=calculate_nearby_pcr(items,spot_price=101,strike_count_each_side=1)
-    assert result.put_oi==800 and result.call_oi==300
+    assert result.put_oi==900 and result.call_oi==300
 def test_invalid_nearby_range_rejected():
     with pytest.raises(ValueError): calculate_nearby_pcr([c(100,"CE",1)],spot_price=100,strike_count_each_side=-1)
 def test_no_strikes_rejected():
