@@ -1,12 +1,15 @@
 import pytest
-from nse_universe.providers.instrument_master import InstrumentMaster
 
-def test_loads_kotak_style_csv_and_looks_up_contract(tmp_path):
+from nse_universe.providers.instrument_master import InstrumentMaster, Instrument
+
+
+def test_loads_actual_kotak_transformed_csv_and_uses_psymbol_as_token(tmp_path):
     path = tmp_path / "nse_fo.csv"
     path.write_text(
-        "pSymbol,pScripRefKey,pTrdSymbol,pInstType,lExpiryDate,dStrikePrice,pOptionType,lLotSize\n"
-        "nse_fo,98765,NIFTY26OCT26000CE,OPTIDX,2026-10-29,26000,CE,65\n"
-        "nse_fo,98766,NIFTY26OCT26000PE,OPTIDX,2026-10-29,26000,PE,65\n",
+        "pSymbol,pGroup,pExchSeg,pInstType,pSymbolName,pTrdSymbol,pOptionType,"
+        "pScripRefKey,lLotSize,lExpiryDate,dStrikePrice;\n"
+        "98765,,nse_fo,OPTIDX,NIFTY,NIFTY26OCT26000CE,CE,NIFTY26OCT26000CE,65,1793000000,26000\n"
+        "98766,,nse_fo,OPTIDX,NIFTY,NIFTY26OCT26000PE,PE,NIFTY26OCT26000PE,65,1793000000,26000\n",
         encoding="utf-8",
     )
     master = InstrumentMaster.from_csv(path)
@@ -19,11 +22,11 @@ def test_loads_kotak_style_csv_and_looks_up_contract(tmp_path):
     assert master.by_symbol("nse_fo", "nifty26oct26000pe").token == "98766"
     assert len(master.search("NIFTY", exchange_segment="nse_fo")) == 2
 
+
 def test_master_rejects_empty_and_duplicate_keys(tmp_path):
     path = tmp_path / "empty.csv"
-    path.write_text("pSymbol,pScripRefKey,pTrdSymbol\n", encoding="utf-8")
+    path.write_text("pSymbol,pExchSeg,pTrdSymbol\n", encoding="utf-8")
     with pytest.raises(ValueError, match="no usable instruments"):
         InstrumentMaster.from_csv(path)
     with pytest.raises(ValueError, match="Duplicate"):
-        from nse_universe.providers.instrument_master import Instrument
         InstrumentMaster([Instrument("1", "nse_fo", "A"), Instrument("1", "nse_fo", "B")])
