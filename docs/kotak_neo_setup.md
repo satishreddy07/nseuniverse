@@ -1,21 +1,34 @@
 # Kotak Neo live market-data setup
 
-This integration uses the official `kotakneoapi` Python SDK and its modern async SFeed market-data WebSocket. Kotak's older HS market feed was scheduled for deprecation on 15 September 2026; use the maintained SDK/SFeed flow rather than legacy WebSocket examples.
+This integration uses the official `kotakneoapi` Python SDK and its modern async SFeed market-data WebSocket.
 
 Official references:
 - SDK repository: https://github.com/Kotak-Neo/kotak-neo-python
 - SFeed guide: https://github.com/Kotak-Neo/kotak-neo-python/blob/main/docs/guides/websocket.md
 - Official scrip-master documentation: https://github.com/Kotak-Neo/Kotak-Neo/blob/main/docs/market-data-apis/instruments.md
 
-## 1. Install the optional SDK
+## Option A: Browser login screen
+
+In Codespaces, run:
+
+```bash
+python -m pip install -e ".[kotak-neo,web]"
+streamlit run src/nse_universe/web_app.py
+```
+
+Open the forwarded Streamlit port from the Codespaces **Ports** tab. Keep the port visibility **Private**. Enter your consumer key, registered mobile number, client/UCC, MPIN and current TOTP into the form. The form clears after submission; credentials are used in the server-side session and are not saved to a file.
+
+The page currently verifies authentication only. It does not yet subscribe to live market data or show the trading dashboard. Do not deploy it publicly without adding proper access control, HTTPS, session expiry and production secret handling.
+
+## Option B: CLI preflight
+
+Install the optional SDK:
 
 ```bash
 python -m pip install -e ".[kotak-neo,dev]"
 ```
 
-## 2. Configure secrets locally
-
-Set these in Codespaces Secrets or your local environment, never in committed files:
+Configure these in Codespaces Secrets or your local environment, never in committed files:
 - `KOTAK_NEO_CONSUMER_KEY` — Neo Trade API consumer key.
 - `KOTAK_NEO_MOBILE_NUMBER` — registered mobile number including country code.
 - `KOTAK_NEO_UCC` — client code/UCC.
@@ -24,7 +37,7 @@ Set these in Codespaces Secrets or your local environment, never in committed fi
 
 A current TOTP is requested interactively by the preflight command. Do not hard-code it, commit an authenticator secret, or paste credentials into chat.
 
-## 3. Inspect the current instrument master
+## Inspect the current instrument master
 
 Download the latest segment CSV from Kotak's official scrip-master workflow and keep it local (for example, `data/nse_fo.csv`). The official transformed CSV maps:
 - `pSymbol` → instrument token used by quote/WebSocket APIs.
@@ -43,11 +56,11 @@ python -m nse_universe.providers.preflight --master data/nse_fo.csv --segment ns
 python -m nse_universe.providers.preflight --master data/nse_cm-v1.csv --segment nse_cm --search "Nifty 50"
 ```
 
-The index's exact symbol may be case-sensitive in quote APIs and may not be represented the same way as ordinary cash-market scrips. Inspect results; do not assume the first NIFTY match is the index, futures contract, or desired expiry.
+Inspect results; do not assume the first NIFTY match is the index, futures contract, or desired expiry.
 
-## 4. Run a market-data-only preflight
+## Run a market-data-only preflight
 
-Choose exact symbol(s) from the search output. Use the exact exchange segment and trading symbol. For example, replace these placeholders with symbols that actually appear in your local current CSV:
+Choose exact symbol(s) from the search output and use the exact exchange segment and trading symbol:
 
 ```bash
 python -m nse_universe.providers.preflight \
@@ -57,15 +70,7 @@ python -m nse_universe.providers.preflight \
   --max-age 5
 ```
 
-For a cash/index instrument, use the appropriate current master and segment, and confirm it is a valid feed subscription before relying on it. To test multiple instruments, repeat `--instrument SEGMENT:SYMBOL`. The command:
-- resolves exact symbols from the local master; it will not guess or silently fuzzy-match;
-- asks for the current TOTP with hidden input;
-- authenticates and subscribes to market data only;
-- prints received tick fields and timestamps;
-- reports each subscription as fresh or stale/missing;
-- exits nonzero if selected instruments do not produce fresh ticks within the test window.
-
-Choose a `--max-age` suitable for the feed and instrument. During closed-market hours, some instruments may not emit fresh ticks; run the feed test during market hours before concluding that permissions or tokens are broken.
+Repeat `--instrument SEGMENT:SYMBOL` to test multiple instruments. The command resolves exact symbols, requests TOTP with hidden input, authenticates, subscribes to market data only, prints received tick fields/timestamps, and exits nonzero if selected instruments do not produce fresh ticks.
 
 Supported modes: `--feed-type touchline`, `--feed-type depth`, or `--feed-type full_depth`. Keep subscriptions within the SDK's documented 3,000-token cap.
 
@@ -74,6 +79,6 @@ Supported modes: `--feed-type touchline`, `--feed-type depth`, or `--feed-type f
 - This layer only authenticates and reads market data; it exposes no order-placement methods.
 - Unit tests do not require live credentials. A successful connection has not been verified against your account from GitHub.
 - Missing OI, volume, or exchange timestamps remain unavailable rather than being fabricated.
-- The adapter relies on the SDK's documented reconnect behavior; local freshness checks flag instruments that stop updating. Verify this with your account and network before relying on it.
-- Do not commit downloaded instrument masters or market data. The loader is local-only and does not automatically download a fresh master.
-- A missing/stale tick or missing OI causes the option-chain builder to omit that contract and mark the snapshot incomplete. Use a verified live spot/index price as the option-chain spot price, not a futures price.
+- During closed-market hours, some instruments may not emit fresh ticks; run feed tests during market hours.
+- Do not commit downloaded instrument masters or market data. The loader is local-only.
+- Missing/stale ticks or missing OI cause the option-chain builder to omit that contract and mark the snapshot incomplete.
