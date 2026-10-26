@@ -12,6 +12,7 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6"]
+kotak-neo = ["kotakneoapi>=3.0.7,<4.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
