@@ -25,7 +25,7 @@ def test_summarize_net_oi_changes_and_rank_contracts():
     ])
     assert report.call_oi_change == 80
     assert report.put_oi_change == 20
-    assert report.pcr_start == 1.0
+    assert report.pcr_start == 1.5
     assert report.pcr_latest == 620 / 480
     assert report.top_call_additions[0].strike == 25000
     assert report.top_call_additions[0].net_change == 60
