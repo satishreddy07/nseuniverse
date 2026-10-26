@@ -32,13 +32,13 @@ class TickCache:
     def latest(self, exchange_segment: str, token: str) -> NormalizedTick | None:
         return self._ticks.get((exchange_segment, str(token)))
 
-    def status(self, exchange_segment: str, token: str, *, now: datetime) -> TickStatus:
+    def status(self, exchange_segment: str, token: str, *, now: datetime, max_age_seconds: float | None = None) -> TickStatus:
         tick = self.latest(exchange_segment, token)
         if tick is None:
             return TickStatus(str(token), exchange_segment, None, True, None)
         age = age_seconds(tick.received_at, now=now)
         return TickStatus(str(token), exchange_segment, age, age > self.max_age_seconds, tick)
 
-    def stale_or_missing(self, subscriptions: Iterable[tuple[str, str]], *, now: datetime) -> tuple[TickStatus, ...]:
+    def stale_or_missing(self, subscriptions: Iterable[tuple[str, str]], *, now: datetime, max_age_seconds: float | None = None) -> tuple[TickStatus, ...]:
         return tuple(status for segment, token in subscriptions
-                     if (status := self.status(segment, token, now=now)).stale)
+                     if (status := self.status(segment, token, now=now, max_age_seconds=max_age_seconds)).stale)
