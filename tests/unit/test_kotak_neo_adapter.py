@@ -66,3 +66,20 @@ def test_normalizes_official_sfeed_aliases_depth_and_epoch_timestamp():
     assert tick.best_ask_price == 110
     assert tick.best_ask_quantity == 25
     assert tick.exchange_timestamp == datetime.fromtimestamp(1793006090, tz=timezone.utc)
+
+
+def test_normalizes_documented_quote_aliases():
+    now = datetime(2026, 10, 26, 9, 15, tzinfo=timezone.utc)
+    tick = KotakNeoAdapter.normalize_message({
+        "exchange_token": "123", "exchange": "nse_fo", "display_symbol": "NIFTYFUT",
+        "ltp": "25001.25", "lstup_time": 1793006090,
+        "last_traded_quantity": "10", "last_volume": "500",
+        "total_buy": "900", "total_sell": "700",
+    }, received_at=now)
+    assert tick.instrument_token == "123"
+    assert tick.exchange_segment == "nse_fo"
+    assert tick.trading_symbol == "NIFTYFUT"
+    assert tick.last_traded_price == 25001.25
+    assert tick.total_buy_quantity == 900
+    assert tick.total_sell_quantity == 700
+    assert tick.exchange_timestamp == datetime.fromtimestamp(1793006090, tz=timezone.utc)
