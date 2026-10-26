@@ -24,6 +24,9 @@ A personal, analysis-first NSE intraday research platform. The project establish
 - Provider-neutral ingestion pipeline that persists normalized snapshots, flags stale/incomplete data, and produces trend reports after at least two snapshots.
 - Optional Kotak Neo adapter using the maintained `kotakneoapi` SDK and modern async SFeed market-data API, with normalized tick models and local fixture tests.
 - Environment-based credential configuration and a market-data-only setup guide (`docs/kotak_neo_setup.md`).
+- Local Kotak scrip-master CSV loader with exact token/symbol lookup; it never fabricates contract tokens.
+- Tick cache with per-instrument freshness checks and explicit missing/stale subscription reporting.
+- Touchline, depth and full-depth subscription modes; normalized best bid/ask and aggregate buy/sell quantities when supplied by the feed.
 - Architecture and trading analytics rules; secret/local-data exclusions in `.gitignore`.
 
 **Scope note:** PCR over supplied contracts only describes those contracts. Treat it as a full-chain metric only when the chain's coverage is known complete. Price/OI quadrant labels for individual options are heuristics, not a directional market signal or a calibrated probability.
