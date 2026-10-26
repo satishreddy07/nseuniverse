@@ -27,6 +27,7 @@ A personal, analysis-first NSE intraday research platform. The project establish
 - Local Kotak scrip-master CSV loader with exact token/symbol lookup; it never fabricates contract tokens.
 - Tick cache with per-instrument freshness checks and explicit missing/stale subscription reporting.
 - Touchline, depth and full-depth subscription modes; normalized best bid/ask and aggregate buy/sell quantities when supplied by the feed.
+- Explicit option-chain snapshot builder that omits stale/missing/OI-less contracts and marks partial snapshots incomplete.
 - Architecture and trading analytics rules; secret/local-data exclusions in `.gitignore`.
 
 **Scope note:** PCR over supplied contracts only describes those contracts. Treat it as a full-chain metric only when the chain's coverage is known complete. Price/OI quadrant labels for individual options are heuristics, not a directional market signal or a calibrated probability.
@@ -50,7 +51,7 @@ python -m pytest
 
 1. Add CI and expand domain contracts.
 2. Add futures VWAP, sector strength, breadth, and explicitly labelled order-flow proxies.
-3. Complete live Kotak Neo session verification, reconnect/backoff, instrument-master loading, and option-chain token mapping.
+3. Verify live Kotak Neo session and instrument-master CSV/token mappings in Codespaces; the SDK manages documented stream reconnection, while local freshness checks flag silent/stale instruments.
 4. Add snapshot replay, walk-forward evaluation, and calibrated signal research.
 
 This is an early foundation, not a production trading system. A future score must not be presented as a probability without out-of-sample calibration. Live order execution remains out of scope until separately specified and risk-reviewed.
