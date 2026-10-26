@@ -42,6 +42,12 @@ class NormalizedTick:
     last_traded_quantity: float | None = None
     volume: float | None = None
     open_interest: float | None = None
+    total_buy_quantity: float | None = None
+    total_sell_quantity: float | None = None
+    best_bid_price: float | None = None
+    best_bid_quantity: float | None = None
+    best_ask_price: float | None = None
+    best_ask_quantity: float | None = None
     source: str = "kotak_neo"
 
     def __post_init__(self) -> None:
@@ -50,14 +56,14 @@ class NormalizedTick:
         if not self.exchange_segment.strip():
             raise ValueError("exchange_segment must not be empty")
         object.__setattr__(self, "last_traded_price", require_finite_number(self.last_traded_price, field_name="last_traded_price"))
-        for name in ("last_traded_quantity", "volume", "open_interest"):
+        for name in ("last_traded_quantity", "volume", "open_interest", "total_buy_quantity", "total_sell_quantity", "best_bid_quantity", "best_ask_quantity"):
             value = getattr(self, name)
             if value is not None:
                 number = require_finite_number(value, field_name=name)
                 if number < 0:
                     raise ValueError(f"{name} must be non-negative")
                 object.__setattr__(self, name, number)
-        require_aware_datetime(self.received_at, field_name="received_at")
+        for name in ("best_bid_price", "best_ask_price"):\n            value = getattr(self, name)\n            if value is not None:\n                object.__setattr__(self, name, require_finite_number(value, field_name=name))\n        require_aware_datetime(self.received_at, field_name="received_at")
         if self.exchange_timestamp is not None:
             require_aware_datetime(self.exchange_timestamp, field_name="exchange_timestamp")
 
@@ -99,7 +105,7 @@ class KotakNeoAdapter:
             raise ValueError("Kotak Neo tick is missing instrument token or exchange segment")
         if price is None:
             raise ValueError("Kotak Neo tick is missing last traded price")
-        exchange_timestamp = get("exchange_timestamp") or get("timestamp")
+        exchange_timestamp = get("exchange_timestamp") or get("last_update_time") or get("last_trade_time") or get("timestamp")
         if isinstance(exchange_timestamp, str):
             try:
                 exchange_timestamp = datetime.fromisoformat(exchange_timestamp.replace("Z", "+00:00"))
@@ -146,3 +152,4 @@ class KotakNeoAdapter:
                 except (TypeError, ValueError):
                     # Non-price events and incomplete packets are not market ticks.
                     continue
+\n\ndef _best_level(message: Any, side: str, field: str) -> float | None:\n    """Read best bid/ask from SDK depth rows when present."""\n    rows = message.get(side, []) if isinstance(message, dict) else getattr(message, side, [])\n    if not rows:\n        return None\n    level = rows[0]\n    value = level.get(field) if isinstance(level, dict) else getattr(level, field, None)\n    if value is None:\n        return None\n    return require_finite_number(value, field_name=f"{side}.{field}")\n
