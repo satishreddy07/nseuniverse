@@ -21,6 +21,7 @@ A personal, analysis-first NSE intraday research platform. The project establish
 - Chain completeness and missing call/put contract checks.
 - SQLite-backed option snapshot history with chronological retrieval and idempotent timestamp upserts.
 - Multi-snapshot OI trend summaries: net call/put OI change, supplied-chain PCR drift, top call/put additions and unwinding, and explicit data-quality warnings.
+- Provider-neutral ingestion pipeline that persists normalized snapshots, flags stale/incomplete data, and produces trend reports after at least two snapshots.
 - Architecture and trading analytics rules; secret/local-data exclusions in `.gitignore`.
 
 **Scope note:** PCR over supplied contracts only describes those contracts. Treat it as a full-chain metric only when the chain's coverage is known complete. Price/OI quadrant labels for individual options are heuristics, not a directional market signal or a calibrated probability.
