@@ -152,6 +152,7 @@ class KotakNeoAdapter:
         exchange_timestamp = (
             get("exchange_timestamp")
             or get("last_update_time")
+            or get("lstup_time")
             or get("last_trade_time")
             or get("timestamp")
         )
@@ -201,8 +202,8 @@ class KotakNeoAdapter:
             ),
             volume=optional_number("volume", "last_volume", "volume_traded_today"),
             open_interest=optional_number("open_interest", "oi"),
-            total_buy_quantity=optional_number("total_buy_quantity"),
-            total_sell_quantity=optional_number("total_sell_quantity"),
+            total_buy_quantity=optional_number("total_buy_quantity", "total_buy"),
+            total_sell_quantity=optional_number("total_sell_quantity", "total_sell"),
             best_bid_price=_best_level(message, "buy", "price"),
             best_bid_quantity=_best_level(message, "buy", "quantity"),
             best_ask_price=_best_level(message, "sell", "price"),
