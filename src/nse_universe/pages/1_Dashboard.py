@@ -71,7 +71,7 @@ if run:
             st.session_state["last_capture_count"]=len(new)
             if new: st.success(f"Received {len(new)} tick updates.")
             else: st.warning("No ticks received. Check market hours, symbol selection, and feed permissions.")
-        except Exception as exc: st.error(f"Feed capture failed ({type(exc).__name__}). Check the broker connection.")
+        except Exception as exc: st.error(f"Feed capture failed ({type(exc).__name__}): {str(exc)[:400]}")
 ticks: list[NormalizedTick]=st.session_state.get("live_ticks",[])
 latest={}
 for tick in ticks:
