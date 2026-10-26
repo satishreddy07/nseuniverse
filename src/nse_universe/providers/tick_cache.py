@@ -1,10 +1,13 @@
 """In-memory latest-tick cache and freshness checks for live dashboards."""
 from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Iterable
+
 from nse_universe.providers.kotak_neo import NormalizedTick
 from nse_universe.validation.market_data import age_seconds
+
 
 @dataclass(frozen=True, slots=True)
 class TickStatus:
@@ -14,8 +17,10 @@ class TickStatus:
     stale: bool
     last_tick: NormalizedTick | None
 
+
 class TickCache:
-    """Keep only latest ticks and report stale/missing subscriptions explicitly."""
+    """Keep latest ticks and report stale/missing subscriptions explicitly."""
+
     def __init__(self, *, max_age_seconds: float = 5.0) -> None:
         if max_age_seconds < 0:
             raise ValueError("max_age_seconds must be non-negative")
@@ -32,13 +37,36 @@ class TickCache:
     def latest(self, exchange_segment: str, token: str) -> NormalizedTick | None:
         return self._ticks.get((exchange_segment, str(token)))
 
-    def status(self, exchange_segment: str, token: str, *, now: datetime, max_age_seconds: float | None = None) -> TickStatus:
+    def status(
+        self,
+        exchange_segment: str,
+        token: str,
+        *,
+        now: datetime,
+        max_age_seconds: float | None = None,
+    ) -> TickStatus:
         tick = self.latest(exchange_segment, token)
         if tick is None:
             return TickStatus(str(token), exchange_segment, None, True, None)
         age = age_seconds(tick.received_at, now=now)
-        return TickStatus(str(token), exchange_segment, age, age > self.max_age_seconds, tick)
+        limit = self.max_age_seconds if max_age_seconds is None else max_age_seconds
+        if limit < 0:
+            raise ValueError("max_age_seconds must be non-negative")
+        return TickStatus(str(token), exchange_segment, age, age > limit, tick)
 
-    def stale_or_missing(self, subscriptions: Iterable[tuple[str, str]], *, now: datetime, max_age_seconds: float | None = None) -> tuple[TickStatus, ...]:
-        return tuple(status for segment, token in subscriptions
-                     if (status := self.status(segment, token, now=now, max_age_seconds=max_age_seconds)).stale)
+    def stale_or_missing(
+        self,
+        subscriptions: Iterable[tuple[str, str]],
+        *,
+        now: datetime,
+        max_age_seconds: float | None = None,
+    ) -> tuple[TickStatus, ...]:
+        return tuple(
+            status
+            for segment, token in subscriptions
+            if (
+                status := self.status(
+                    segment, token, now=now, max_age_seconds=max_age_seconds
+                )
+            ).stale
+        )
