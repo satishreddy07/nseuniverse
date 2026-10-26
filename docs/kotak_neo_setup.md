@@ -45,3 +45,17 @@ The token pairs above are illustrative. Use valid exchange segment/token pairs f
 - A successful connection has not been verified against your account from GitHub. First run a market-data-only session and verify symbols, timestamps, and feed permissions.
 - Missing OI/volume/timestamps remain unavailable rather than being fabricated.
 - Reconnect/backoff, instrument-master download, and option-chain-to-contract mapping remain next steps. Do not treat an empty or stale stream as a valid signal.
+
+
+## Instrument master and depth
+
+Download the current CSV from Kotak Neo's authenticated scrip-master workflow, then load it locally:
+
+    from nse_universe.providers.instrument_master import InstrumentMaster
+    master = InstrumentMaster.from_csv("data/nse_fo.csv")
+    matches = master.search("NIFTY", exchange_segment="nse_fo")
+    print(matches[:10])
+
+Use `master.get("nse_fo", token)` to resolve a token or `master.by_symbol("nse_fo", trading_symbol)` for an exact symbol. Confirm the CSV columns and selected contract/expiry before subscribing; the loader skips rows without segment, token, and symbol. Keep downloaded market data local and do not commit it.
+
+For depth-capable subscriptions, use `adapter.stream(tokens, feed_type="depth")` or `feed_type="full_depth"`. The adapter exposes aggregate buy/sell quantities and best bid/ask where present. This is a snapshot of the SDK feed, not a complete reconstructed order-by-order tape. Use `TickCache(max_age_seconds=5)` to detect missing/stale tick updates; choose the freshness threshold to match the instrument/feed cadence.
