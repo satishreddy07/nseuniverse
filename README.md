@@ -23,7 +23,7 @@ A personal, analysis-first NSE intraday research platform. The project establish
 - Multi-snapshot OI trend summaries: net call/put OI change, supplied-chain PCR drift, top call/put additions and unwinding, and explicit data-quality warnings.
 - Provider-neutral ingestion pipeline that persists normalized snapshots, flags stale/incomplete data, and produces trend reports after at least two snapshots.
 - Optional Kotak Neo adapter using the maintained `kotakneoapi` SDK and modern async SFeed market-data API, with normalized tick models and local fixture tests.
-- Environment-based credential configuration and a market-data-only setup guide (`docs/kotak_neo_setup.md`).
+- Browser-based Kotak Neo login screen (optional Streamlit dependency); credentials are session-only and are not saved to files.
 - Local Kotak scrip-master CSV loader using the documented `pSymbol` token, `pExchSeg` segment and `pTrdSymbol` symbol mappings; it never fabricates contract tokens.
 - Market-data-only preflight CLI to inspect a local master, resolve exact symbols, authenticate with hidden TOTP input, print received ticks, and fail on stale/missing subscriptions.
 - Tick cache with per-instrument freshness checks and explicit missing/stale subscription reporting.
@@ -43,10 +43,19 @@ python -m venv .venv
 # macOS/Linux/Codespaces: source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
-# Optional live Kotak Neo data support:
-# python -m pip install -e ".[kotak-neo]"
 python -m pytest
 ```
+
+## Open the browser login page
+
+Install the optional broker and web dependencies, then launch the app in your Codespace:
+
+```bash
+python -m pip install -e ".[kotak-neo,web]"
+streamlit run src/nse_universe/web_app.py
+```
+
+Open the forwarded Streamlit port from the Codespaces **Ports** tab and keep its visibility **Private**. Enter the Kotak Neo consumer key, registered mobile number, UCC, MPIN and current TOTP in the form. The form clears after submission; credentials are held in server-side session memory and are not written to a file. This page currently checks login only; it does not yet start the live market feed or display the trading dashboard.
 
 ## Next phases
 
