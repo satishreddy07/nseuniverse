@@ -32,7 +32,7 @@ class OptionChainSnapshotBuilder:
         if max_age_seconds < 0:
             raise ValueError("max_age_seconds must be non-negative")
         contracts: list[OptionContract] = []
-        all_fresh_and_complete = True
+        all_fresh_and_complete = self._selected_pairs_complete
         for item in self.instruments:
             status = cache.status(item.exchange_segment, item.token, now=now, max_age_seconds=max_age_seconds)
             tick = status.last_tick
