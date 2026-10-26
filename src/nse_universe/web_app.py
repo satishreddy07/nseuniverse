@@ -1,7 +1,7 @@
 """Local Streamlit login screen for Kotak Neo market-data access.
 
-Credentials are held only in this Streamlit server session's memory. This page
-does not save them to disk, write them to logs, or place orders.
+Credentials are used only in this server-side session and are not written to disk.
+This page does not place orders.
 """
 from __future__ import annotations
 
@@ -13,13 +13,13 @@ st.set_page_config(page_title="NSE Universe · Broker Login", page_icon="📈", 
 
 st.title("NSE Universe")
 st.subheader("Kotak Neo connection")
-st.info(
-    "Market-data access only. Credentials are used by this server session for login "
-    "and are not saved to a file. Do not expose this page publicly or enter credentials "
-    "on a shared/untrusted computer."
+st.warning(
+    "Market-data access only. Credentials are used by this server session and are not "
+    "saved to a file. Do not expose this page publicly or enter credentials on a "
+    "shared/untrusted computer."
 )
 
-with st.form("kotak_login", clear_on_submit=False):
+with st.form("kotak_login", clear_on_submit=True):
     consumer_key = st.text_input("Consumer key", type="password", autocomplete="off")
     mobile_number = st.text_input("Registered mobile number", autocomplete="off")
     ucc = st.text_input("Client/UCC", autocomplete="off")
@@ -60,11 +60,8 @@ if submitted:
         except Exception as exc:
             st.session_state.pop("kotak_adapter", None)
             st.session_state["kotak_authenticated"] = False
-            # Avoid showing provider response bodies that might contain sensitive data.
+            # Avoid displaying provider response bodies that might contain sensitive data.
             st.error(f"Authentication failed ({type(exc).__name__}). Check the details and current TOTP, then try again.")
-        finally:
-            # Do not retain the one-time code in Streamlit session state.
-            st.session_state.pop("totp", None)
 
 if st.session_state.get("kotak_authenticated"):
     st.success("Status: authenticated")
