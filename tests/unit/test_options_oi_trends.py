@@ -21,17 +21,18 @@ def test_summarize_net_oi_changes_and_rank_contracts():
     report = summarize_oi_trends([
         snapshot(at, 100, 200, 300, 400),
         snapshot(at + timedelta(minutes=1), 130, 180, 350, 390),
-        snapshot(at + timedelta(minutes=2), 160, 170, 320, 450),
+        snapshot(at + timedelta(minutes=2), 160, 170, 280, 450),
     ])
-    assert report.call_oi_change == 80
+    assert report.call_oi_change == 40
     assert report.put_oi_change == 20
     assert report.pcr_start == 1.5
-    assert report.pcr_latest == 620 / 480
+    assert report.pcr_latest == 620 / 440
     assert report.top_call_additions[0].strike == 25000
     assert report.top_call_additions[0].net_change == 60
     assert report.top_put_additions[0].strike == 25100
     assert report.top_put_additions[0].net_change == 50
     assert report.top_call_unwinding[0].strike == 25100
+    assert report.top_call_unwinding[0].net_change == -20
     assert report.top_put_unwinding[0].strike == 25000
 
 
